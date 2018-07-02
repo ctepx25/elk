@@ -1,4 +1,4 @@
-version: '2.2'
+version: '3.0'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
@@ -18,9 +18,9 @@ services:
       - 9200:9200
     networks:
       - esnet
+
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-    container_name: elasticsearch2
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
@@ -33,60 +33,6 @@ services:
         hard: -1
     volumes:
       - esdata2:/tmp/data2
-    networks:
-      - esnet
-
-  elasticsearch3:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-    container_name: elasticsearch3
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch"
-      - "discovery.zen.minimum_master_nodes=2"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata3:/tmp/data2
-    networks:
-      - esnet
-
-  elasticsearch4:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-    container_name: elasticsearch4
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch"
-      - "discovery.zen.minimum_master_nodes=2"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata4:/tmp/data2
-    networks:
-      - esnet
-
-  elasticsearch5:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-    container_name: elasticsearch5
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch"
-      - "discovery.zen.minimum_master_nodes=2"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata5:/tmp/data2
     networks:
       - esnet
 
@@ -119,31 +65,35 @@ services:
     depends_on:
       - elasticsearch
 
-  kopf:
-    container_name: kopf
-    build:
-      context: kopf/docker/
+  hq:
+    container_name: hq
+    image: elastichq/elasticsearch-hq
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:5000"
+    environment:
+      - "HQ_DEFAULT_URL=http://elasticsearch:9200"
     networks:
       - esnet
-    environment:
-      - "KOPF_ES_SERVERS=elasticsearch:9200"
-      - "KOPF_SERVER_NAME=kopf-server"
     depends_on:
       - elasticsearch
-    
+
+  nginx-filebeat:
+    container_name: nginx-filebeat
+    image: ubuntu
+    tty: true
+    ports:
+      - "80:80"
+    networks:
+      - esnet
+    depends_on:
+      - elasticsearch
+
 volumes:
   esdata1:
     driver: local
   esdata2:
     driver: local
   esdata3:
-    driver: local
-  esdata4:
-    driver: local
-  esdata5:
     driver: local
 
 networks:
