@@ -38,7 +38,7 @@
   - debug: msg={{output.stdout}}
 
   - name: Restart FILEBEAT
-    shell: docker exec -t nginx-filebeat bash -c 'chown root:root /etc/filebeat/filebeat.yml;/etc/init.d/filebeat start'
+    shell: docker exec -t nginx-filebeat bash -c 'chown root:root /etc/filebeat/filebeat.yml;exec -c service filebeat start'
     register: output
   - debug: msg={{output.stdout}}
 
