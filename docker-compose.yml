@@ -79,7 +79,7 @@ services:
 
   nginx-filebeat:
     container_name: nginx-filebeat
-    image: nginx
+    image: ubuntu
     tty: true
     ports:
       - "80:80"

@@ -18,11 +18,11 @@
     when: output1.rc == 0
 
   - name: Install dependences
-    shell: docker exec -t nginx-filebeat bash -c 'apt-get update;apt-get install curl -y'
+    shell: docker exec -t nginx-filebeat bash -c 'apt-get update;apt-get install curl nginx -y'
     register: output
   - debug: msg={{output.stdout}}
 
-  - name: Install Filebeat
+  - name: Install Filebeat 
     shell: docker exec -t nginx-filebeat bash -c 'curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.3.0-amd64.deb;dpkg -i filebeat-6.3.0-amd64.deb'
     register: output
   - debug: msg={{output.stdout}}
