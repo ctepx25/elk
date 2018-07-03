@@ -7,38 +7,62 @@
     git: 
       repo=https://github.com/ctepx25/elk.git
       dest=/tmp/elk
-
-  - name: Check if docker is installed
-    shell: which docker-compose
-    register: output1
+    when: arg1 == "deploy"
 
   - name: Create environment
     command: docker-compose -f /tmp/elk/docker-compose.yml up -d
     register: dockeroutput
-    when: output1.rc == 0
+    when: arg1 == "deploy"  
 
   - name: Install dependences
     shell: docker exec -t nginx-filebeat bash -c 'apt-get update;apt-get install curl nginx -y'
     register: output
+    when: arg1 == "deploy"
   - debug: msg={{output.stdout}}
+    when: output.stdout is defined
 
   - name: Install Filebeat 
     shell: docker exec -t nginx-filebeat bash -c 'curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.3.0-amd64.deb;dpkg -i filebeat-6.3.0-amd64.deb'
     register: output
+    when: arg1 == "deploy"
   - debug: msg={{output.stdout}}
+    when: output.stdout is defined
 
   - name: Copy filebeat.yml
     shell: docker cp ./filebeat.yml nginx-filebeat:/etc/filebeat/filebeat.yml
     register: output
+    when: arg1 == "deploy"
   - debug: msg={{output.stdout}}
+    when: output.stdout is defined
 
   - name: Restart NGINX
     shell: docker exec -t nginx-filebeat bash -c '/etc/init.d/nginx restart'
     register: output
+    when: arg1 == "deploy"
   - debug: msg={{output.stdout}}
+    when: output.stdout is defined
 
   - name: Restart FILEBEAT
     shell: docker exec nginx-filebeat bash -c 'chown root:root /etc/filebeat/filebeat.yml;exec -c service filebeat start'
     register: output
+    when: arg1 == "deploy"
   - debug: msg={{output.stdout}}
+    when: output.stdout is defined
+
+
+  - name: Terminate environemnt
+    command: docker-compose -f /tmp/elk/docker-compose.yml down
+    register: output
+    when: arg1 == "terminate"  
+  - debug: msg={{output.stdout}}
+    when: output.stdout is defined
+
+  - name: Scale elasticsearch cluster
+    command: docker-compose -f /tmp/elk/docker-compose.yml scale  elasticsearch2={{arg2}}
+    register: output
+    when: 
+      - arg1 == "scale"
+      - arg2 >= 1
+  - debug: msg={{output.stdout}}
+    when: output.stdout is defined
 
