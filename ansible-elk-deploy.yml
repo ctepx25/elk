@@ -3,8 +3,13 @@
   gather_facts: no
   tasks:
 
-  - name: Check docker-compose
+  - name: Check docker-compose installed
     command: docker-compose -v
+    register: output
+    failed_when: "'FAILED' in output.stderr"
+
+  - name: Check git installed 
+    command: git --version
     register: output
     failed_when: "'FAILED' in output.stderr"
 
